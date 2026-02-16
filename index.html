@@ -3,111 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Government Links JSON Generator</title>
+    <title>JSON Link Generator · Government links</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .remove-btn { transition: all 0.15s ease; }
+        .remove-btn:hover { background-color: #fee2e2; }
+        .preview-item:last-child { border-bottom: none; }
+        .fade-in { animation: fadeIn 0.2s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="max-w-2xl w-full bg-white rounded-xl shadow-lg p-6 md:p-8">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">📋 Sarkari Link JSON Tool</h1>
-        <p class="text-gray-600 mb-6">Generated JSON will now include the <b>"id"</b> field for your database.</p>
-        
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div class="flex items-center justify-between">
-                <span class="text-blue-800 font-medium">Links in Queue:</span>
-                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold" id="linkCount">0</span>
+<body class="bg-slate-50 font-sans antialiased">
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 md:py-10">
+    <div class="mb-8 text-center md:text-left">
+        <h1 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">🔗 JSON Link Generator</h1>
+        <p class="text-slate-500 mt-1 text-lg">government websites · <b>Auto-ID Generation</b> · exact format</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5 md:p-7">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Title <span class="text-xs text-slate-400">required</span></label>
+                    <input type="text" id="titleInput" placeholder="e.g. GST Portal" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">URL <span class="text-xs text-slate-400">required</span></label>
+                    <input type="url" id="urlInput" placeholder="https://www.gst.gov.in" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Category <span class="text-xs text-slate-400">required</span></label>
+                    <input type="text" id="categoryInput" placeholder="e.g. Tax & Business" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition bg-slate-50/50">
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                    <textarea id="descInput" rows="2" placeholder="Brief description of the link …" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition resize-none bg-slate-50/50"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Keywords <span class="text-xs text-slate-400">comma separated</span></label>
+                    <input type="text" id="keywordsInput" placeholder="gst verify, tax, registration" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition bg-slate-50/50">
+                </div>
             </div>
         </div>
 
-        <div class="border border-gray-200 rounded-lg mb-6 max-h-96 overflow-y-auto bg-gray-900 p-4">
-            <div class="text-green-400 font-mono text-xs" id="jsonPreview">
-                </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 mt-7 pt-2 border-t border-slate-200">
+            <div class="flex gap-2">
+                <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm transition flex items-center gap-1">
+                    Add Link (with ID)
+                </button>
+                <button id="clearAllBtn" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-medium px-5 py-2.5 rounded-lg shadow-sm transition">Clear All</button>
+            </div>
+            <button id="downloadBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-2.5 rounded-lg shadow-sm transition flex items-center gap-1">
+                Download links.json
+            </button>
         </div>
 
-        <button id="downloadBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center gap-2 text-lg shadow-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Download links.json (with IDs)
-        </button>
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                <span>📋 Added links</span>
+                <span id="counterBadge" class="bg-slate-200 text-slate-700 text-sm px-2.5 py-0.5 rounded-full">0</span>
+            </h2>
+            <div id="previewList" class="bg-slate-50 rounded-xl border border-slate-200 divide-y divide-slate-200 max-h-96 overflow-y-auto">
+                <div id="emptyPlaceholder" class="p-6 text-center text-slate-400 italic">No links added yet.</div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script>
-        (function() {
-            // Data with IDs included
-            const governmentLinks = [
-                {
-                    "id": "1",
-                    "title": "GST Portal",
-                    "url": "https://www.gst.gov.in",
-                    "category": "Tax & Business",
-                    "description": "Official portal for GST registration, returns filing, and tax payments.",
-                    "keywords": ["gst verify", "gst number check", "gst registration"]
-                },
-                {
-                    "id": "2",
-                    "title": "Income Tax",
-                    "url": "https://www.incometax.gov.in",
-                    "category": "Tax & Business",
-                    "description": "File Income Tax Returns (ITR) and check refund status.",
-                    "keywords": ["itr", "tax refund", "pan link"]
-                },
-                {
-                    "id": "3",
-                    "title": "UIDAI (Aadhaar)",
-                    "url": "https://uidai.gov.in",
-                    "category": "Identity",
-                    "description": "Update Aadhaar details and download e-Aadhaar.",
-                    "keywords": ["aadhaar update", "uid", "identity proof"]
-                },
-                {
-                    "id": "4",
-                    "title": "DigiLocker",
-                    "url": "https://www.digilocker.gov.in",
-                    "category": "Digital Services",
-                    "description": "Secure cloud-based platform for document verification.",
-                    "keywords": ["e-locker", "driving license", "marksheet"]
-                },
-                {
-                    "id": "5",
-                    "title": "Parivahan",
-                    "url": "https://parivahan.gov.in",
-                    "category": "Transport",
-                    "description": "Vehicle registration and driving license application.",
-                    "keywords": ["vahan", "sarathi", "challan"]
-                }
-            ];
+<script>
+    (function() {
+        "use strict";
 
-            // Update Count
-            document.getElementById('linkCount').textContent = governmentLinks.length;
+        let linksArray = [];
 
-            // Show a code-style preview so you can see the ID is there
-            document.getElementById('jsonPreview').innerHTML = '<pre>' + JSON.stringify(governmentLinks.slice(0, 2), null, 2) + '\n  ... more links' + '</pre>';
+        // Elements
+        const titleIn = document.getElementById('titleInput'),
+              urlIn = document.getElementById('urlInput'),
+              categoryIn = document.getElementById('categoryInput'),
+              descIn = document.getElementById('descInput'),
+              kwIn = document.getElementById('keywordsInput'),
+              addBtn = document.getElementById('addBtn'),
+              clearAllBtn = document.getElementById('clearAllBtn'),
+              downloadBtn = document.getElementById('downloadBtn'),
+              previewList = document.getElementById('previewList'),
+              emptyPlaceholder = document.getElementById('emptyPlaceholder'),
+              counterBadge = document.getElementById('counterBadge');
 
-            // Download functionality
-            document.getElementById('downloadBtn').addEventListener('click', function() {
-                // FIXED: We are NOT removing ID anymore. 
-                // We map all fields including id.
-                const finalData = governmentLinks.map(link => ({
-                    id: link.id, // ID is now kept!
-                    title: link.title,
-                    url: link.url,
-                    category: link.category,
-                    description: link.description,
-                    keywords: link.keywords
-                }));
+        function renderPreview() {
+            while (previewList.children.length > 1) {
+                previewList.removeChild(previewList.lastChild);
+            }
 
-                const jsonString = JSON.stringify(finalData, null, 2);
-                const blob = new Blob([jsonString], { type: 'application/json' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'links.json';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
+            if (linksArray.length === 0) {
+                emptyPlaceholder.classList.remove('hidden');
+                counterBadge.textContent = '0';
+                return;
+            }
+
+            emptyPlaceholder.classList.add('hidden');
+
+            linksArray.forEach((link, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'preview-item p-4 hover:bg-white transition fade-in flex items-start gap-3';
+                
+                itemDiv.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-bold bg-slate-800 text-white px-1.5 py-0.5 rounded">ID: ${link.id}</span>
+                            <span class="font-semibold text-slate-800 truncate">${escapeHtml(link.title)}</span>
+                            <span class="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full border border-blue-200 uppercase">${escapeHtml(link.category)}</span>
+                        </div>
+                        <p class="text-xs text-blue-600 truncate">${escapeHtml(link.url)}</p>
+                        <p class="text-sm text-slate-600 mt-1">${escapeHtml(link.description)}</p>
+                        <div class="flex flex-wrap gap-1 mt-2">
+                            ${link.keywords.map(k => `<span class="bg-slate-200 text-slate-600 text-[10px] px-1.5 py-0.5 rounded border border-slate-300">${escapeHtml(k)}</span>`).join('')}
+                        </div>
+                    </div>
+                    <button class="remove-btn p-1.5 rounded-full text-slate-400 hover:text-red-600" onclick="window.removeLink(${index})">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                `;
+                previewList.appendChild(itemDiv);
             });
-        })();
-    </script>
+            counterBadge.textContent = linksArray.length;
+        }
+
+        window.removeLink = (idx) => {
+            linksArray.splice(idx, 1);
+            // Re-assign IDs to maintain sequence 1, 2, 3... (optional, but cleaner)
+            linksArray.forEach((l, i) => l.id = (i + 1).toString());
+            renderPreview();
+        };
+
+        function addLinkFromForm() {
+            if (!titleIn.value || !urlIn.value || !categoryIn.value) return alert('Fill required fields');
+
+            const newLink = {
+                id: (linksArray.length + 1).toString(), // Generates "1", "2", etc.
+                title: titleIn.value.trim(),
+                url: urlIn.value.trim(),
+                category: categoryIn.value.trim(),
+                description: descIn.value.trim(),
+                keywords: kwIn.value.split(',').map(k => k.trim()).filter(k => k !== '')
+            };
+
+            linksArray.push(newLink);
+            renderPreview();
+            [titleIn, urlIn, categoryIn, descIn, kwIn].forEach(i => i.value = '');
+        }
+
+        function downloadJSON() {
+            if (linksArray.length === 0) return alert('No links to download');
+            const blob = new Blob([JSON.stringify(linksArray, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'links.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        addBtn.addEventListener('click', addLinkFromForm);
+        clearAllBtn.addEventListener('click', () => { if(confirm('Clear all?')) { linksArray = []; renderPreview(); }});
+        downloadBtn.addEventListener('click', downloadJSON);
+        renderPreview();
+    })();
+</script>
 </body>
 </html>
