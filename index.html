@@ -3,200 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Government Links JSON Downloader (with ID)</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Government Links JSON Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4">
     <div class="max-w-2xl w-full bg-white rounded-xl shadow-lg p-6 md:p-8">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">📋 Government Links JSON Generator</h1>
-        <p class="text-gray-600 mb-6">Download your government links with ID field included ✅</p>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">📋 Sarkari Link JSON Tool</h1>
+        <p class="text-gray-600 mb-6">Generated JSON will now include the <b>"id"</b> field for your database.</p>
         
-        <!-- Stats Card -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div class="flex items-center justify-between">
-                <span class="text-blue-800 font-medium">Total Links Ready:</span>
+                <span class="text-blue-800 font-medium">Links in Queue:</span>
                 <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold" id="linkCount">0</span>
             </div>
-            <p class="text-sm text-blue-700 mt-2">
-                ✅ Format: <span class="font-mono bg-blue-100 px-1">id</span>, <span class="font-mono bg-blue-100 px-1">title</span>, <span class="font-mono bg-blue-100 px-1">url</span>, <span class="font-mono bg-blue-100 px-1">category</span>, <span class="font-mono bg-blue-100 px-1">description</span>, <span class="font-mono bg-blue-100 px-1">keywords</span> (array)
-            </p>
         </div>
 
-        <!-- Preview Card -->
-        <div class="border border-gray-200 rounded-lg mb-6 max-h-96 overflow-y-auto">
-            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 font-semibold text-gray-700 sticky top-0 flex justify-between">
-                <span>Preview (first few links with ID)</span>
-                <span class="text-xs text-gray-500">⬇️ Scroll for more</span>
-            </div>
-            <div class="p-4 space-y-3" id="previewContainer">
-                <!-- Preview will be injected here -->
-            </div>
+        <div class="border border-gray-200 rounded-lg mb-6 max-h-96 overflow-y-auto bg-gray-900 p-4">
+            <div class="text-green-400 font-mono text-xs" id="jsonPreview">
+                </div>
         </div>
 
-        <!-- Download Button -->
-        <button id="downloadBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center gap-2 text-lg">
+        <button id="downloadBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center gap-2 text-lg shadow-lg">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            Download links.json (with ID)
+            Download links.json (with IDs)
         </button>
-
-        <p class="text-xs text-gray-400 text-center mt-4">
-            JSON formatted with 2-space indentation • ID field included • Keywords as arrays
-        </p>
     </div>
 
     <script>
         (function() {
-            // The exact data from your TypeScript file (with ID field included)
+            // Data with IDs included
             const governmentLinks = [
                 {
-                    id: "1",
-                    title: "GST Portal",
-                    url: "https://www.gst.gov.in",
-                    category: "Tax & Business",
-                    description: "Official portal for GST registration, returns filing, and tax payments.",
-                    keywords: ["gst verify", "gst number check", "gst registration", "tax return", "indirect tax"]
+                    "id": "1",
+                    "title": "GST Portal",
+                    "url": "https://www.gst.gov.in",
+                    "category": "Tax & Business",
+                    "description": "Official portal for GST registration, returns filing, and tax payments.",
+                    "keywords": ["gst verify", "gst number check", "gst registration"]
                 },
                 {
-                    id: "2",
-                    title: "Income Tax (e-Filing)",
-                    url: "https://www.incometax.gov.in",
-                    category: "Tax & Business",
-                    description: "File Income Tax Returns (ITR), check refund status, and link Aadhaar with PAN.",
-                    keywords: ["itr", "tax refund", "pan link", "income tax filing", "taxpayer portal"]
+                    "id": "2",
+                    "title": "Income Tax",
+                    "url": "https://www.incometax.gov.in",
+                    "category": "Tax & Business",
+                    "description": "File Income Tax Returns (ITR) and check refund status.",
+                    "keywords": ["itr", "tax refund", "pan link"]
                 },
                 {
-                    id: "3",
-                    title: "UIDAI (Aadhaar)",
-                    url: "https://uidai.gov.in",
-                    category: "Identity",
-                    description: "Update Aadhaar details, download e-Aadhaar, and check enrollment status.",
-                    keywords: ["aadhaar update", "download aadhaar", "uid", "identity proof", "address change"]
+                    "id": "3",
+                    "title": "UIDAI (Aadhaar)",
+                    "url": "https://uidai.gov.in",
+                    "category": "Identity",
+                    "description": "Update Aadhaar details and download e-Aadhaar.",
+                    "keywords": ["aadhaar update", "uid", "identity proof"]
                 },
                 {
-                    id: "4",
-                    title: "DigiLocker",
-                    url: "https://www.digilocker.gov.in",
-                    category: "Digital Services",
-                    description: "A secure cloud-based platform for storage, sharing, and verification of documents.",
-                    keywords: ["documents storage", "digital certificate", "e-locker", "driving license", "marksheet"]
+                    "id": "4",
+                    "title": "DigiLocker",
+                    "url": "https://www.digilocker.gov.in",
+                    "category": "Digital Services",
+                    "description": "Secure cloud-based platform for document verification.",
+                    "keywords": ["e-locker", "driving license", "marksheet"]
                 },
                 {
-                    id: "5",
-                    title: "Parivahan (Vahan & Sarathi)",
-                    url: "https://parivahan.gov.in",
-                    category: "Transport",
-                    description: "Vehicle registration, driving license application, and e-challan payment.",
-                    keywords: ["driving license", "rc transfer", "challan check", "vahan", "sarathi", "transport"]
-                },
-                {
-                    id: "6",
-                    title: "Passport Seva",
-                    url: "https://www.passportindia.gov.in",
-                    category: "Identity",
-                    description: "Apply for a new passport, renew existing passport, and track application status.",
-                    keywords: ["passport apply", "appointment", "visa", "travel document", "re-issue"]
-                },
-                {
-                    id: "7",
-                    title: "NVSP (Voter Portal)",
-                    url: "https://www.nvsp.in",
-                    category: "Identity",
-                    description: "Register as a new voter, search name in electoral roll, and apply for correction.",
-                    keywords: ["voter card", "epic", "election", "voter id", "poll status"]
-                },
-                {
-                    id: "8",
-                    title: "PM-Kisan Samman Nidhi",
-                    url: "https://pmkisan.gov.in",
-                    category: "Agriculture",
-                    description: "Check installment status and register for farmer welfare benefits.",
-                    keywords: ["farmer", "kisan", "subsidy", "benefit status", "pmkisan"]
-                },
-                {
-                    id: "9",
-                    title: "Startup India",
-                    url: "https://www.startupindia.gov.in",
-                    category: "Tax & Business",
-                    description: "Initiative by the Government of India for nurturing startups.",
-                    keywords: ["startup", "entrepreneur", "funding", "recognition", "dpiit"]
-                },
-                {
-                    id: "10",
-                    title: "National Job Portal (NCS)",
-                    url: "https://www.ncs.gov.in",
-                    category: "Employment",
-                    description: "A comprehensive portal for career counseling, vocational guidance, and job matching.",
-                    keywords: ["jobs", "employment", "career", "skill development", "ncs registration"]
-                },
-                {
-                    id: "11",
-                    title: "UMANG Portal",
-                    url: "https://web.umang.gov.in",
-                    category: "Digital Services",
-                    description: "Unified Mobile Application for New-age Governance - access multi-gov services.",
-                    keywords: ["government services", "mobile app", "epfo", "gas booking", "digilocker"]
-                },
-                {
-                    id: "12",
-                    title: "EPFO (UAN Portal)",
-                    url: "https://www.epfindia.gov.in",
-                    category: "Employment",
-                    description: "Check PF balance, withdrawal status, and manage employee provident fund.",
-                    keywords: ["provident fund", "uan", "pf balance", "pension", "employer"]
+                    "id": "5",
+                    "title": "Parivahan",
+                    "url": "https://parivahan.gov.in",
+                    "category": "Transport",
+                    "description": "Vehicle registration and driving license application.",
+                    "keywords": ["vahan", "sarathi", "challan"]
                 }
             ];
 
-            // Update link count
+            // Update Count
             document.getElementById('linkCount').textContent = governmentLinks.length;
 
-            // Show preview of first 4 links
-            const previewContainer = document.getElementById('previewContainer');
-            const previewLinks = governmentLinks.slice(0, 4);
-            
-            previewLinks.forEach((link) => {
-                const previewItem = document.createElement('div');
-                previewItem.className = 'border-b border-gray-100 last:border-0 pb-3 last:pb-0';
-                
-                // Create keywords badges
-                const keywordsHtml = link.keywords.slice(0, 3).map(kw => 
-                    `<span class="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded mr-1 mb-1">${kw}</span>`
-                ).join('');
-                
-                previewItem.innerHTML = `
-                    <div class="flex items-start gap-2">
-                        <span class="bg-blue-100 text-blue-600 text-xs font-medium px-2 py-1 rounded min-w-[2rem] text-center">#${link.id}</span>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="font-medium text-gray-800">${link.title}</span>
-                                <span class="bg-purple-100 text-purple-600 text-xs px-2 py-0.5 rounded">${link.category}</span>
-                            </div>
-                            <p class="text-sm text-gray-600 mt-1 line-clamp-2">${link.description}</p>
-                            <div class="mt-2 flex flex-wrap gap-1">
-                                ${keywordsHtml}
-                                ${link.keywords.length > 3 ? `<span class="text-xs text-gray-400">+${link.keywords.length - 3} more</span>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-                previewContainer.appendChild(previewItem);
-            });
-
-            if (governmentLinks.length > 4) {
-                const moreIndicator = document.createElement('p');
-                moreIndicator.className = 'text-sm text-gray-400 italic pt-2 text-center';
-                moreIndicator.textContent = `... and ${governmentLinks.length - 4} more links (all with IDs)`;
-                previewContainer.appendChild(moreIndicator);
-            }
+            // Show a code-style preview so you can see the ID is there
+            document.getElementById('jsonPreview').innerHTML = '<pre>' + JSON.stringify(governmentLinks.slice(0, 2), null, 2) + '\n  ... more links' + '</pre>';
 
             // Download functionality
             document.getElementById('downloadBtn').addEventListener('click', function() {
-                // Use the full data with ID field included (no filtering this time 😅)
-                const jsonString = JSON.stringify(governmentLinks, null, 2);
-                
-                // Create blob and download
+                // FIXED: We are NOT removing ID anymore. 
+                // We map all fields including id.
+                const finalData = governmentLinks.map(link => ({
+                    id: link.id, // ID is now kept!
+                    title: link.title,
+                    url: link.url,
+                    category: link.category,
+                    description: link.description,
+                    keywords: link.keywords
+                }));
+
+                const jsonString = JSON.stringify(finalData, null, 2);
                 const blob = new Blob([jsonString], { type: 'application/json' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
