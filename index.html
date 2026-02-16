@@ -1,1 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Link Generator · Government links</title>
+    <!-- Tailwind CSS CDN (light, responsive) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- tiny extra style for hover etc. -->
+    <style>
+        .remove-btn { transition: all 0.15s ease; }
+        .remove-btn:hover { background-color: #fee2e2; }
+        .preview-item:last-child { border-bottom: none; }
+        /* smooth appearance for added items */
+        .fade-in { animation: fadeIn 0.2s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans antialiased">
 
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 md:py-10">
+    <!-- header -->
+    <div class="mb-8 text-center md:text-left">
+        <h1 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">🔗 JSON Link Generator</h1>
+        <p class="text-slate-500 mt-1 text-lg">government websites · structured preview · exact format</p>
+    </div>
+
+    <!-- main card -->
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5 md:p-7">
+        <!-- FORM SECTION -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- left column: main fields -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Title <span class="text-xs text-slate-400">required</span></label>
+                    <input type="text" id="titleInput" placeholder="e.g. GST Portal" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">URL <span class="text-xs text-slate-400">required</span></label>
+                    <input type="url" id="urlInput" placeholder="https://www.gst.gov.in" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Category <span class="text-xs text-slate-400">required</span></label>
+                    <input type="text" id="categoryInput" placeholder="e.g. Tax & Business" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition bg-slate-50/50">
+                </div>
+            </div>
+            <!-- right column: description & keywords -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                    <textarea id="descInput" rows="2" placeholder="Brief description of the link …" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition resize-none bg-slate-50/50"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Keywords <span class="text-xs text-slate-400">comma separated</span></label>
+                    <input type="text" id="keywordsInput" placeholder="gst verify, gst registration, e-way bill" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition bg-slate-50/50">
+                    <p class="text-xs text-slate-400 mt-1">eg: "tax, compliance, gst" → will become array</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- action buttons row -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mt-7 pt-2 border-t border-slate-200">
+            <div class="flex gap-2">
+                <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm transition flex items-center gap-1 text-sm md:text-base">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                    Add Link
+                </button>
+                <button id="clearAllBtn" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-medium px-5 py-2.5 rounded-lg shadow-sm transition text-sm md:text-base">Clear All</button>
+            </div>
+            <button id="downloadBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-2.5 rounded-lg shadow-sm transition flex items-center gap-1 text-sm md:text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                Download links.json
+            </button>
+        </div>
+
+        <!-- PREVIEW CARD (added links) -->
+        <div class="mt-8">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                    <span>📋 Added links</span>
+                    <span id="counterBadge" class="bg-slate-200 text-slate-700 text-sm px-2.5 py-0.5 rounded-full">0</span>
+                </h2>
+                <span class="text-xs text-slate-400 italic">click ✕ to remove</span>
+            </div>
+            <!-- dynamic preview list container -->
+            <div id="previewList" class="bg-slate-50 rounded-xl border border-slate-200 divide-y divide-slate-200 max-h-96 overflow-y-auto">
+                <!-- placeholder when empty -->
+                <div id="emptyPlaceholder" class="p-6 text-center text-slate-400 italic">No links added yet. Fill the form and click "Add Link".</div>
+                <!-- actual items will be injected here via JS -->
+            </div>
+        </div>
+    </div>
+    <!-- tiny footnote -->
+    <p class="text-xs text-slate-400 mt-4 text-center">JSON structure: indentation 2 spaces, keywords as array. All data stays in your browser.</p>
+</div>
+
+<script>
+    (function() {
+        "use strict";
+
+        // ---------- in‑memory array that holds all link objects ----------
+        let linksArray = [];
+
+        // ---------- DOM element references ----------
+        const titleIn = document.getElementById('titleInput');
+        const urlIn = document.getElementById('urlInput');
+        const categoryIn = document.getElementById('categoryInput');
+        const descIn = document.getElementById('descInput');
+        const kwIn = document.getElementById('keywordsInput');
+        const addBtn = document.getElementById('addBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const previewList = document.getElementById('previewList');
+        const emptyPlaceholder = document.getElementById('emptyPlaceholder');
+        const counterBadge = document.getElementById('counterBadge');
+
+        // ---------- helper: re-render preview list from linksArray ----------
+        function renderPreview() {
+            // clear container (keep placeholder element, we will manage it)
+            // but we want to remove all dynamically added child nodes except placeholder
+            const children = previewList.children;
+            // loop backwards and remove all nodes that are not the placeholder div
+            for (let i = children.length - 1; i >= 0; i--) {
+                if (children[i] !== emptyPlaceholder) {
+                    previewList.removeChild(children[i]);
+                }
+            }
+
+            // if array empty -> show placeholder, update counter and exit
+            if (linksArray.length === 0) {
+                emptyPlaceholder.classList.remove('hidden');   // ensure visible
+                counterBadge.textContent = '0';
+                return;
+            }
+
+            // array not empty: hide placeholder
+            emptyPlaceholder.classList.add('hidden');
+
+            // loop through linksArray and create preview items (newest first? optional, but we append in order of addition)
+            linksArray.forEach((link, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'preview-item p-4 hover:bg-white transition fade-in relative flex flex-wrap md:flex-nowrap gap-3 items-start';
+                // left side content (grow)
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'flex-1 min-w-0'; // min-w-0 for truncation
+
+                // title line with category badge
+                const titleLine = document.createElement('div');
+                titleLine.className = 'flex flex-wrap items-center gap-2 mb-1';
+                titleLine.innerHTML = `
+                    <span class="font-semibold text-slate-800 truncate max-w-xs">${escapeHtml(link.title || '')}</span>
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full border border-blue-200">${escapeHtml(link.category || '')}</span>
+                `;
+
+                // url (clickable, shorten display)
+                const urlLine = document.createElement('div');
+                urlLine.className = 'text-xs text-slate-500 mb-1 truncate';
+                const displayUrl = link.url && link.url.length > 50 ? link.url.substring(0, 50) + '…' : link.url;
+                urlLine.innerHTML = `<a href="${escapeHtml(link.url)}" target="_blank" class="text-blue-600 hover:underline break-all">${escapeHtml(displayUrl)}</a>`;
+
+                // description if exists
+                let descHtml = '';
+                if (link.description && link.description.trim() !== '') {
+                    descHtml = `<p class="text-sm text-slate-600 mt-1 line-clamp-2">${escapeHtml(link.description)}</p>`;
+                }
+
+                // keywords as badges (if array)
+                let kwHtml = '';
+                if (link.keywords && Array.isArray(link.keywords) && link.keywords.length > 0) {
+                    const kwBadges = link.keywords.map(k => `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-md border border-slate-200">${escapeHtml(k)}</span>`).join('');
+                    kwHtml = `<div class="flex flex-wrap gap-1 mt-2">${kwBadges}</div>`;
+                }
+
+                contentDiv.innerHTML += titleLine.outerHTML + urlLine.outerHTML + descHtml + kwHtml; // careful: using outerHTML duplicates but fine
+
+                // remove button (right)
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn self-center md:self-start p-1.5 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition';
+                removeBtn.setAttribute('data-index', index);
+                removeBtn.setAttribute('aria-label', 'Remove link');
+                removeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>';
+
+                // attach remove event
+                removeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const idx = parseInt(this.getAttribute('data-index'), 10);
+                    if (!isNaN(idx) && idx >= 0 && idx < linksArray.length) {
+                        // remove 1 element at idx
+                        linksArray.splice(idx, 1);
+                        renderPreview();  // re-render after deletion
+                    }
+                });
+
+                itemDiv.appendChild(contentDiv);
+                itemDiv.appendChild(removeBtn);
+                previewList.appendChild(itemDiv);
+            });
+
+            // update counter badge
+            counterBadge.textContent = linksArray.length;
+        }
+
+        // tiny escape helper for innerHTML safety (prevent XSS from user input)
+        function escapeHtml(unsafe) {
+            if (unsafe == null) return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // ---------- parse keywords from comma separated string -> array (trim, filter empty) ----------
+        function parseKeywords(kwString) {
+            if (!kwString || typeof kwString !== 'string') return [];
+            return kwString.split(',')
+                .map(item => item.trim())
+                .filter(item => item !== '');
+        }
+
+        // ---------- validate form (title, url, category must be non-empty) ----------
+        function validateInputs() {
+            const title = titleIn.value.trim();
+            const url = urlIn.value.trim();
+            const category = categoryIn.value.trim();
+            if (title === '') { alert('Title is required'); return false; }
+            if (url === '') { alert('URL is required'); return false; }
+            if (category === '') { alert('Category is required'); return false; }
+            // simple url check (just to avoid totally broken)
+            try {
+                new URL(url); // will throw if invalid
+            } catch (e) {
+                alert('Please enter a valid absolute URL (including https://)');
+                return false;
+            }
+            return true;
+        }
+
+        // ---------- add new link from form ----------
+        function addLinkFromForm() {
+            if (!validateInputs()) return;
+
+            // gather values
+            const title = titleIn.value.trim();
+            const url = urlIn.value.trim();
+            const category = categoryIn.value.trim();
+            const description = descIn.value.trim();
+            const rawKeywords = kwIn.value.trim();
+
+            // build object with EXACT structure
+            const newLink = {
+                title: title,
+                url: url,
+                category: category,
+                description: description,
+                keywords: parseKeywords(rawKeywords)
+            };
+
+            // push to array
+            linksArray.push(newLink);
+
+            // re-render preview
+            renderPreview();
+
+            // clear form (optional but user-friendly)
+            titleIn.value = '';
+            urlIn.value = '';
+            categoryIn.value = '';
+            descIn.value = '';
+            kwIn.value = '';
+
+            // focus back to title for convenience
+            titleIn.focus();
+        }
+
+        // ---------- clear all links ----------
+        function clearAllLinks() {
+            if (linksArray.length === 0) return;
+            if (confirm('Remove all links from the list?')) {
+                linksArray = [];
+                renderPreview();
+                // also clear form fields (optional, but makes sense)
+                titleIn.value = '';
+                urlIn.value = '';
+                categoryIn.value = '';
+                descIn.value = '';
+                kwIn.value = '';
+            }
+        }
+
+        // ---------- download JSON file (exactly 2 spaces indentation) ----------
+        function downloadJSON() {
+            if (linksArray.length === 0) {
+                alert('No links to download. Add at least one link first.');
+                return;
+            }
+
+            // deep copy to avoid mutations (though we just stringify)
+            // ensure structure matches: keywords array exists (already ensured in add)
+            const dataToExport = linksArray.map(item => ({
+                title: item.title,
+                url: item.url,
+                category: item.category,
+                description: item.description || '',   // empty string if none
+                keywords: Array.isArray(item.keywords) ? item.keywords : []
+            }));
+
+            // stringify with 2 spaces indentation
+            const jsonStr = JSON.stringify(dataToExport, null, 2);
+
+            // create blob and download
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'links.json';          // exact filename required
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ---------- event listeners ----------
+        addBtn.addEventListener('click', addLinkFromForm);
+
+        clearAllBtn.addEventListener('click', clearAllLinks);
+
+        downloadBtn.addEventListener('click', downloadJSON);
+
+        // optional: press Enter in any field? we keep simple, but let's allow enter on last field (keywords) to trigger add?
+        kwIn.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addBtn.click();
+            }
+        });
+
+        // initial render (empty)
+        renderPreview();
+
+        // for demo, prepopulate one example link to show how it works (optional beginner friendly)
+        // but we want to start empty? Actually it's nice to have a sample to demonstrate structure.
+        // Uncomment next lines if you want a sample entry on load, else empty.
+        // (I'll leave empty to match "allow me to add" – but one example may be helpful)
+        // let's add a single example government link to show preview (comment out if not desired)
+        // *************** EXAMPLE ENTRY (feel free to remove if you want blank start) ***************
+        if (linksArray.length === 0) {
+            // small timeout to show something? but we can just push one default.
+            linksArray.push({
+                title: "GST Portal",
+                url: "https://www.gst.gov.in",
+                category: "Tax & Business",
+                description: "GST registration and verification portal",
+                keywords: ["gst verify", "gst registration"]
+            });
+            renderPreview();   // will show nice preview
+        }
+        // ********************************************************************************************
+        // Note: If you want completely empty, comment the five lines above.
+        // But specification says "allow me to add", but example is okay. I keep to demonstrate.
+        // We also keep the placeholder visible if user clears all.
+    })();
+</script>
+
+<!-- additional safety for older browsers, but fine -->
+</body>
+</html>
